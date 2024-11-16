@@ -190,8 +190,8 @@ function App() {
       </a>
     </div>
   </nav>
-  <aside>a
-    <p>Copyright © {new Date().getFullYear()} - All right reserved by ACME Industries Ltd</p>
+  <aside>
+    <p>Copyright © {new Date().getFullYear()} - All right reserved by Rhakelino</p>
   </aside>
 </footer>
     </>
