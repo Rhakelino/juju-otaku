@@ -1,11 +1,17 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
+  darkMode: 'class', // Mengaktifkan dark mode berbasis kelas
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{html,js,jsx}", // masukkan .jsx di sini untuk proyek JS
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        costumLight: '#1A103D'
+      }
+    },
   },
-  plugins: [],
+  plugins: [
+    require("daisyui"), // Tambahkan DaisyUI ke plugins
+  ],
 }
