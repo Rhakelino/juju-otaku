@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import image1 from './assets/images/1.jpg';
 import image2 from './assets/images/2.jpg';
 import image3 from './assets/images/4.png';
@@ -10,6 +12,8 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedAnime, setSelectedAnime] = useState(null); // State untuk menyimpan anime yang dipilih
+  const [isCarouselLoading, setIsCarouselLoading] = useState(true);
+
 
   const localImages = [image1, image2, image3];
 
@@ -22,6 +26,24 @@ function App() {
       document.body.classList.remove('bg-base-200', 'text-white');
     }
   }, [isDarkMode]);
+
+  // AOS Animation
+  useEffect(() => {
+    AOS.init({
+      duration: 1000, // Durasi animasi dalam milidetik
+      once: false, // Animasi hanya dijalankan sekali
+    });
+  }, []);
+
+
+  useEffect(() => {
+    // Simulasi delay untuk loading data carousel (jika diperlukan)
+    setTimeout(() => {
+      setIsCarouselLoading(false);
+    }, 2000); // Simulasi delay 2 detik
+  }, []);
+  
+  
 
   useEffect(() => {
     if (searchTerm === '') {
@@ -65,7 +87,7 @@ function App() {
   return (
     <>
       <div className={`flex justify-between navbar ${isDarkMode ? 'bg-base-200' : 'bg-white'}`}>
-        <a className="btn btn-ghost text-xl">Juju Otaku</a>
+        <a href='' className="btn btn-ghost text-xl">Juju Otaku</a>
         <label className="swap swap-rotate">
           <input
             type="checkbox"
@@ -96,20 +118,28 @@ function App() {
 
       {/* Carousel */}
       <div className="carousel w-full h-[500px] relative">
-        <img
-          src={localImages[currentSlide]}
-          alt={`Slide ${currentSlide + 1}`}
-          className="w-full object-cover"
-        />
-        <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-          <button className="btn btn-circle" onClick={handlePrevSlide}>
-            ❮
-          </button>
-          <button className="btn btn-circle" onClick={handleNextSlide}>
-            ❯
-          </button>
-        </div>
-      </div>
+  {isCarouselLoading ? (
+    // Skeleton carousel
+    <div className="animate-pulse w-full h-[500px] bg-gray-600 rounded-md"></div>
+  ) : (
+    <img
+      src={localImages[currentSlide]}
+      alt={`Slide ${currentSlide + 1}`}
+      className="w-full object-cover"
+    />
+  )}
+  {!isCarouselLoading && (
+    <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+      <button className="btn btn-circle" onClick={handlePrevSlide}>
+        ❮
+      </button>
+      <button className="btn btn-circle" onClick={handleNextSlide}>
+        ❯
+      </button>
+    </div>
+  )}
+</div>
+
 
       {/* Search bar */}
       <div className="flex mb-3 items-center ml-5 md:ml-28 mt-5 justify-evenly m-2">
@@ -137,28 +167,40 @@ function App() {
 
       {/* Anime cards */}
       <div className="flex justify-center min-h-screen m-10">
-        {isSearching ? (
-          <span className="loading loading-spinner loading-lg"></span>
-        ) : (
-          <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {animeList.map((data, index) => (
-              <div
-                key={index}
-                className="flex my-3 flex-col items-center rounded-md overflow-hidden cursor-pointer relative group transition hover:scale-110"
-                onClick={() => handleCardClick(data)}
-              >
-                <img
-                  src={data.images.jpg.large_image_url || data.images.jpg.image_url}
-                  alt={data.title}
-                  className="object-cover w-full h-60 z-10"
-                />
-                <h1 className="font-semibold text-center p-2 text-sm">{data.title}</h1>
-                <div className="absolute inset-0 bg-gradient-to-t from-sky-500 to-transparent opacity-0 group-hover:opacity-80 transition-opacity z-20"></div>
-              </div>
-            ))}
+  {isSearching ? (
+    <span className="loading loading-spinner loading-lg"></span>
+  ) : (
+    <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {animeList.length === 0 ? (
+        // Skeleton placeholder
+        Array.from({ length: 10 }).map((_, index) => (
+          <div key={index} className="animate-pulse flex flex-col items-center space-y-3">
+            <div className="w-full h-60 bg-gray-300 rounded-md"></div>
+            <div className="w-3/4 h-5 bg-gray-300 rounded-md"></div>
           </div>
-        )}
-      </div>
+        ))
+      ) : (
+        animeList.map((data, index) => (
+          <div
+            key={index}
+            className="flex my-3 flex-col items-center rounded-md overflow-hidden cursor-pointer relative group transition hover:scale-110"
+            onClick={() => handleCardClick(data)}
+            data-aos="fade-up"
+          >
+            <img
+              src={data.images.jpg.large_image_url || data.images.jpg.image_url}
+              alt={data.title}
+              className="object-cover w-full h-60 z-10"
+            />
+            <h1 className="font-semibold text-center p-2 text-sm">{data.title}</h1>
+            <div className="absolute inset-0 bg-gradient-to-t from-sky-500 to-transparent opacity-0 group-hover:opacity-80 transition-opacity z-20"></div>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</div>
+
 
       {/* Modal Detail Anime */}
       {selectedAnime && (
