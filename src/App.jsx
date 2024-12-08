@@ -13,6 +13,7 @@ function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedAnime, setSelectedAnime] = useState(null); // State untuk menyimpan anime yang dipilih
   const [isCarouselLoading, setIsCarouselLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
 
   const localImages = [image1, image2, image3];
@@ -31,7 +32,7 @@ function App() {
   useEffect(() => {
     AOS.init({
       duration: 1000, // Durasi animasi dalam milidetik
-      once: false, // Animasi hanya dijalankan sekali
+      once: true, // Animasi hanya dijalankan sekali
     });
   }, []);
 
@@ -42,12 +43,28 @@ function App() {
       setIsCarouselLoading(false);
     }, 2000); // Simulasi delay 2 detik
   }, []);
-  
-  
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+
 
   useEffect(() => {
     if (searchTerm === '') {
-      fetch('https://api.jikan.moe/v4/top/anime')
+      fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity')
         .then(response => response.json())
         .then(data => {
           setAnimeList(data.data);
@@ -85,8 +102,10 @@ function App() {
   };
 
   return (
-    <>
-      <div className={`flex justify-between navbar ${isDarkMode ? 'bg-base-200' : 'bg-white'}`}>
+    <div className={`${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+      <div
+        className={`flex justify-between navbar ${scrolled ? 'bg-base-300' : 'bg-transparent text-white'} ${isDarkMode ? 'text-white' : 'text-black bg-white'} fixed top-0 left-0 right-0 z-10 transition`}
+      >
         <a href='' className="btn btn-ghost text-xl">Juju Otaku</a>
         <label className="swap swap-rotate">
           <input
@@ -117,33 +136,39 @@ function App() {
       </div>
 
       {/* Carousel */}
-      <div className="carousel w-full h-[500px] relative">
-  {isCarouselLoading ? (
-    // Skeleton carousel
-    <div className="animate-pulse w-full h-[500px] bg-gray-600 rounded-md"></div>
-  ) : (
-    <img
-      src={localImages[currentSlide]}
-      alt={`Slide ${currentSlide + 1}`}
-      className="w-full object-cover"
-    />
-  )}
-  {!isCarouselLoading && (
-    <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-      <button className="btn btn-circle" onClick={handlePrevSlide}>
-        ❮
-      </button>
-      <button className="btn btn-circle" onClick={handleNextSlide}>
-        ❯
-      </button>
-    </div>
-  )}
-</div>
+      <div className="carousel w-full h-[1080px] sm:h-full relative bg-black">
+        {isCarouselLoading ? (
+          // Skeleton carousel
+          <div className="animate-pulse w-full h-[1000px] bg-gray-600 rounded-md"></div>
+        ) : (
+          <div className="relative w-full h-full">
+            <img
+              src={localImages[currentSlide]}
+              alt={`Slide ${currentSlide + 1}`}
+              className="w-full h-full object-cover opacity-50"
+            />
+            <div className={`absolute top-0 left-0 w-full h-full ${isDarkMode ? 'bg-gradient-to-t from-black to-transparent' : 'bg-gradient-to-t from-white to-transparent'} `}></div>
+          </div>
+        )}
+
+        {!isCarouselLoading && (
+          <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+            <button className={`btn btn-circle ${isDarkMode ? '' : "bg-white border-none"}`} onClick={handlePrevSlide}>
+              ❮
+            </button>
+            <button className={`btn btn-circle ${isDarkMode ? '' : "bg-white border-none"}`} onClick={handleNextSlide}>
+              ❯
+            </button>
+          </div>
+        )}
+      </div>
+
+
 
 
       {/* Search bar */}
       <div className="flex mb-3 items-center ml-5 md:ml-28 mt-5 justify-evenly m-2">
-        <h2 className="text-2xl font-bold">Top Anime</h2>
+        <h2 className="text-2xl font-bold">Most Popular</h2>
         <label className={`input input-bordered border-black flex items-center gap-2 ${isDarkMode ? '' : 'bg-white'}`}>
           <input
             type="text"
@@ -165,48 +190,49 @@ function App() {
         </label>
       </div>
 
+
       {/* Anime cards */}
       <div className="flex justify-center min-h-screen m-10">
-  {isSearching ? (
-    <span className="loading loading-spinner loading-lg"></span>
-  ) : (
-    <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {animeList.length === 0 ? (
-        // Skeleton placeholder
-        Array.from({ length: 10 }).map((_, index) => (
-          <div key={index} className="animate-pulse flex flex-col items-center space-y-3">
-            <div className="w-full h-60 bg-gray-300 rounded-md"></div>
-            <div className="w-3/4 h-5 bg-gray-300 rounded-md"></div>
+        {isSearching ? (
+          <span className="loading loading-spinner loading-lg"></span>
+        ) : (
+          <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {animeList.length === 0 ? (
+              // Skeleton placeholder
+              Array.from({ length: 10 }).map((_, index) => (
+                <div key={index} className="animate-pulse flex flex-col items-center space-y-3">
+                  <div className="w-full h-60 bg-gray-300 rounded-md"></div>
+                  <div className="w-3/4 h-5 bg-gray-300 rounded-md"></div>
+                </div>
+              ))
+            ) : (
+              animeList.map((data, index) => (
+                <div
+                  key={index}
+                  className="flex my-3 flex-col items-center rounded-md overflow-hidden cursor-pointer relative group transition hover:scale-110"
+                  onClick={() => handleCardClick(data)}
+                  data-aos="fade-up"
+                >
+                  <img
+                    src={data.images.jpg.large_image_url || data.images.jpg.image_url}
+                    alt={data.title}
+                    className="object-cover w-full h-60 z-10"
+                  />
+                  <h1 className="font-semibold text-center p-2 text-sm">{data.title}</h1>
+                  <div className="absolute inset-0 bg-gradient-to-t from-sky-500 to-transparent opacity-0 group-hover:opacity-80 transition-opacity z-20"></div>
+                </div>
+              ))
+            )}
           </div>
-        ))
-      ) : (
-        animeList.map((data, index) => (
-          <div
-            key={index}
-            className="flex my-3 flex-col items-center rounded-md overflow-hidden cursor-pointer relative group transition hover:scale-110"
-            onClick={() => handleCardClick(data)}
-            data-aos="fade-up"
-          >
-            <img
-              src={data.images.jpg.large_image_url || data.images.jpg.image_url}
-              alt={data.title}
-              className="object-cover w-full h-60 z-10"
-            />
-            <h1 className="font-semibold text-center p-2 text-sm">{data.title}</h1>
-            <div className="absolute inset-0 bg-gradient-to-t from-sky-500 to-transparent opacity-0 group-hover:opacity-80 transition-opacity z-20"></div>
-          </div>
-        ))
-      )}
-    </div>
-  )}
-</div>
+        )}
+      </div>
 
 
       {/* Modal Detail Anime */}
       {selectedAnime && (
         <div className={`modal modal-open`}>
           <div className={`modal-box ${isDarkMode ? '' : 'bg-white text-black'}`}>
-          <h2 className="font-bold text-lg text-center">{selectedAnime.title}</h2>
+            <h2 className="font-bold text-lg text-center">{selectedAnime.title}</h2>
             <img
               src={selectedAnime.images.jpg.large_image_url}
               alt={selectedAnime.title}
@@ -216,7 +242,8 @@ function App() {
               <span key={index}>{genre.name}{index < selectedAnime.genres.length - 1 ? ', ' : ''}</span>
             ))}</p>
             <p><span className='font-bold'>Total Episode: </span>{selectedAnime.episodes}</p>
-            <p><span className='font-bold'>Rating: </span> {selectedAnime.score}</p>
+            <p><span className='font-bold'>Popularity: </span> {selectedAnime.popularity}</p>
+            <p><span className='font-bold'>Score: </span> {selectedAnime.score}</p>
             {selectedAnime.trailer && selectedAnime.trailer.embed_url ? (
               <div className="mt-4">
                 <h3 className="text-lg font-bold">Trailer</h3>
@@ -246,7 +273,7 @@ function App() {
           <p>Copyright © {new Date().getFullYear()} - All right reserved by Rhakelino</p>
         </aside>
       </footer>
-    </>
+    </div>
   );
 }
 
