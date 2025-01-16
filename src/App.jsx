@@ -104,13 +104,13 @@ function App() {
   return (
     <div className={`${isDarkMode ? 'bg-black' : 'bg-white'}`}>
       <div
-        className={`flex justify-between navbar ${scrolled ? 'bg-base-300' : 'bg-transparent text-white'} ${isDarkMode ? 'text-white' : 'text-black bg-white'} fixed top-0 left-0 right-0 z-10 transition`}
+        className={`flex justify-between navbar ${scrolled ? 'bg-base-300' : 'bg-transparent text-white'} ${isDarkMode ? 'text-white' : 'text-black bg-white '} fixed top-0 left-0 right-0 z-10 transition`}
       >
-        <a href='' className="btn btn-ghost text-xl">Juju Otaku</a>
-        <label className="swap swap-rotate">
+        <a href='' className={`btn btn-ghost text-xl ${isDarkMode ? "" : "text-black"}`}>Juju Otaku</a>
+        <label className={`swap swap-rotate ${isDarkMode ? "" : "text-black"}`}>
           <input
             type="checkbox"
-            className="theme-controller"
+            className={`theme-controller`}
             checked={isDarkMode}
             onChange={() => setIsDarkMode(!isDarkMode)}
           />
@@ -231,6 +231,9 @@ function App() {
       {/* Modal Detail Anime */}
       {selectedAnime && (
         <div className={`modal modal-open`}>
+          <div className="modal-action">
+              <button className="btn" onClick={closeModal}>Close</button>
+            </div>
           <div className={`modal-box ${isDarkMode ? '' : 'bg-white text-black'}`}>
             <h2 className="font-bold text-lg text-center">{selectedAnime.title}</h2>
             <img
@@ -260,9 +263,7 @@ function App() {
             ) : (
               <p className="mt-4">Trailer not available</p>
             )}
-            <div className="modal-action">
-              <button className="btn" onClick={closeModal}>Close</button>
-            </div>
+            
           </div>
         </div>
       )}
